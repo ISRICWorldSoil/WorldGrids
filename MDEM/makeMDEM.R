@@ -1,6 +1,11 @@
 ## Derive mean Global DEM avarage between three global DEM sources: (1) http://www.viewfinderpanoramas.org/dem3.html, (2) SRTMGL3 - http://e4ftl01.cr.usgs.gov/SRTM/SRTMGL3.003/2000.02.11/ and (3) GMTED2010 - https://lta.cr.usgs.gov/GMTED2010
 ## then derive standard DEM parameters
 
+library(gdalUtils)
+library(rgdal)
+library(plotKML)
+gdal.dir <- shortPathName("C:/Program files/GDAL")
+gdal_setInstallation(search_path=gdal.dir, rescan=TRUE)
 load("../Equi7/equi7t3.rda")
 
 ## Prepare the GMTED2010 (https://lta.cr.usgs.gov/GMTED2010):
@@ -36,8 +41,15 @@ for(j in 1:length(equi7t3)){
 }
 ## TH: Some tiles I had to clean up manually (digitize polygons, remove values and fill in the gaps using CLOSE GAPS using splines in SAGA GIS)
 
-## Derive 6 standard DEM parameters:
-source("DEM_parameters_parallel.R")
-for(j in c(1,3,4,5,6,7)){
-  saga_TA(inputFile=paste0("DEM_", names(equi7t3)[j], "_250m.tif.gz"), smaskFile=paste0("SMK_", names(equi7t3)[j], "_250m.tif.gz"))
-}
+## check some tiles in Google Earth:
+gdalwarp("iceland_MDEM_EU_250m.sdat", "iceland_MDEM_EU_250m_ll.tif",  s_srs=proj4string(equi7t3[["EU"]]), t_srs="+proj=longlat +datum=WGS84")
+iceland <- readGDAL("iceland_MDEM_EU_250m_ll.tif")
+iceland$band1 <- ifelse(iceland$band1==0, NA, iceland$band1)
+kml(iceland, raster_name="iceland_MDEM_EU_250m_ll.png", colour_scale=SAGA_pal[[1]], png.widht=iceland@grid@cells.dim[1]*3, png.height=iceland@grid@cells.dim[2]*3, z.lim=c(2,859))
+
+gdalwarp("alaska_MDEM_NA_250m.sdat", "alaska_MDEM_NA_250m_ll.tif",  s_srs=proj4string(equi7t3[["NA"]]), t_srs="+proj=longlat +datum=WGS84")
+alaska <- readGDAL("alaska_MDEM_NA_250m_ll.tif")
+alaska$band1 <- ifelse(alaska$band1==0, NA, alaska$band1)
+kml(alaska, raster_name="alaska_MDEM_NA_250m_ll.png", colour_scale=SAGA_pal[[1]], png.widht=alaska@grid@cells.dim[1]*3, png.height=alaska@grid@cells.dim[2]*3)
+
+

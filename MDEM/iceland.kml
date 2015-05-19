@@ -1,0 +1,31 @@
+<kml xmlns:xsd="http://schemas.opengis.net/kml/2.2.0/ogckml22.xsd" xmlns:xmlns="http://www.opengis.net/kml/2.2/" version="1.0">
+  <Document>
+    <name>iceland</name>
+    <open>1</open>
+    <Folder>
+      <name>SpatialGridDataFrame</name>
+      <GroundOverlay>
+        <name>NULL</name>
+        <altitude>0</altitude>
+        <altitudeMode>clampToGround</altitudeMode>
+        <Icon>
+          <href>iceland_MDEM_EU_250m_ll.png</href>
+        </Icon>
+        <LatLonBox>
+          <north>66.7678339351392</north>
+          <south>64.898908827167</south>
+          <east>-20.466669542074</east>
+          <west>-25.2779257238215</west>
+        </LatLonBox>
+      </GroundOverlay>
+    </Folder>
+    <ScreenOverlay>
+      <name>Legend</name>
+      <Icon>
+        <href>iceland_MDEM_EU_250m_ll_legend.png</href>
+      </Icon>
+      <overlayXY x="0" y="1" xunits="fraction" yunits="fraction"/>
+      <screenXY x="0" y="1" xunits="fraction" yunits="fraction"/>
+    </ScreenOverlay>
+  </Document>
+</kml>

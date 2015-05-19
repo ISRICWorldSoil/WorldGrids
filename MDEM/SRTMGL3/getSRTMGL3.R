@@ -24,7 +24,7 @@ for(i in 1:length(sel)){
 }
 
 ## create a MEGA!! mosaic:
-tmp.lst <- list.files(pattern=glob2rx("*.hgt$"))
+tmp.lst <- list.files(path="X:\\SRTMGL3", pattern=glob2rx("*.hgt$"), full.names=TRUE)
 unlink("my_liste.txt")
 cat(tmp.lst, sep="\n", file="my_liste.txt")
 gdalbuildvrt(input_file_list="my_liste.txt", output.vrt="SRTMGL3.vrt")
