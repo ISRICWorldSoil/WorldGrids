@@ -4,7 +4,18 @@
 library(rgdal)
 library(sp)
 library(maptools)
+library(plotKML)
+library(GSIF)
 #setwd("\\Equi7_Grid_V12_Public_Package\\Grids")
+if(.Platform$OS.type == "windows"){
+  gdal.dir <- shortPathName("C:/Program files/GDAL")
+  gdal_translate <- paste0(gdal.dir, "/gdal_translate.exe")
+  gdalwarp <- paste0(gdal.dir, "/gdalwarp.exe") 
+} else {
+  gdal_translate = "gdal_translate"
+  gdalwarp = "gdalwarp"
+}
+
 lst <- list.files(pattern="*_PROJ_ZONE.shp$", full.names = TRUE, recursive = TRUE)
 equi7 <- list(NULL)
 for(i in 1:length(lst)){
@@ -56,3 +67,29 @@ for(i in 1:length(equi7t3)){
   writeOGR(equi7t3[[i]], paste0(names(equi7t3)[i], "_t3_tiles.shp"), paste0(names(equi7t3)[i], "_t3_tiles"), "ESRI Shapefile")
 }
 
+## 8 representative areas for testing:
+s8 <- list(Zone=c("AF", "OC", "AS", "AS", "EU", "NA", "SA", "SA"), TILE=c("072_048", "087_063", "072_087", "048_003", "051_012", "060_036", "072_066", "090_048"))
+s8.equi7t3 <- list(NULL)
+for(j in 1:length(s8$Zone)){
+  s8.equi7t3[[j]] <- equi7t3[[s8$Zone[j]]][equi7t3[[s8$Zone[j]]]$TILE==s8$TILE[j],]
+}
+names(s8.equi7t3) <- paste0(s8$Zone, "_", s8$TILE)
+save(s8.equi7t3, file="s8.equi7t3.rda")
+
+s8.equi7t3.ll <- lapply(s8.equi7t3, spTransform, CRS("+proj=longlat +datum=WGS84"))
+s8.equi7t3.ll <- do.call(rbind, s8.equi7t3.ll)
+plotKML(s8.equi7t3.ll, filename="s8.equi7t3.kml", folder.name="S8")
+
+## plot in R:
+data(landmask)
+gridded(landmask) <- ~x+y
+proj4string(landmask) <- "+proj=longlat +datum=WGS84"
+library(maps)
+country.m = map('world', plot=FALSE, fill=TRUE)
+IDs <- sapply(strsplit(country.m$names, ":"), function(x) x[1])
+library(maptools)
+country <- as(map2SpatialPolygons(country.m, IDs=IDs), "SpatialLines")
+mask <- landmask[landmask$mask>10,"mask"]
+plot(raster(mask), col="grey")
+lines(as(s8.equi7t3.ll, "SpatialLines"))
+spplot(s8.equi7t3.ll["COVERSLAND"], col.regions="red", sp.layout=list("sp.lines", country), scales=list(draw=TRUE), xlim=c(-180,180), ylim=c(-90,90), colorkey=FALSE)

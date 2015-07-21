@@ -11,6 +11,8 @@ library(raster)
 library(RSAGA)
 gdal.dir <- shortPathName("C:/Program files/GDAL")
 gdal_setInstallation(search_path=gdal.dir, rescan=TRUE)
+gdalwarp <- paste0(gdal.dir, "/gdalwarp.exe")
+gdaladdo <- paste0(gdal.dir, "/gdaladdo.exe")
 
 ## Download all files in the folder:
 system("wget -r --no-parent http://e4ftl01.cr.usgs.gov/SRTM/SRTMGL3.003/2000.02.11/")
@@ -38,3 +40,10 @@ for(j in 1:length(equi7t3)){
     gdalwarp("SRTMGL3.vrt", dstfile=dstfile, tr=c(250,250), r="average", t_srs=proj4string(equi7t3[[j]]), te=as.vector(te)[c(1,3,2,4)], dstnodata=-32767, ot="Int16", of="SAGA")
   }
 }
+
+## Africa 100 m:
+GDALinfo("SRTMGL3.vrt")
+te <- as.vector(bbox(equi7t3[[1]]))
+system(paste0(gdalwarp, ' SRTMGL3.vrt SRTMGL3_AF_100m.tif -r \"near\" -te ', paste(te, collapse=" "), ' -t_srs \"', proj4string(equi7t3[[j]]), '\" -tr 100 100 -dstnodata \"-32767\" -ot \"Int16\"'))
+system(paste0(gdaladdo, ' SRTMGL3_AF_100m.tif 2 4 8 16 32 64'))
+
