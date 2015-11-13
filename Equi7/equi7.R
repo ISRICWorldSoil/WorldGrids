@@ -6,7 +6,7 @@ library(sp)
 library(maptools)
 library(plotKML)
 library(GSIF)
-#setwd("\\Equi7_Grid_V12_Public_Package\\Grids")
+setwd("E:\\EQUI7")
 if(.Platform$OS.type == "windows"){
   gdal.dir <- shortPathName("C:/Program files/GDAL")
   gdal_translate <- paste0(gdal.dir, "/gdal_translate.exe")
@@ -49,14 +49,18 @@ for(i in 1:length(t.lst)){
   ## subset to tiles with land:
   equi7t3[[i]] <- equi7t3[[i]][equi7t3[[i]]$COVERSLAND==1,]
 }
+## Few tiles needed manual fixing i.e. they show no-land but should be land
+
 ## land polys:
 land.lst <- list.files(path="EQUI7_V13_GRIDS", pattern="*_PROJ_LAND.shp$", full.names = TRUE, recursive = TRUE)
 equi7land <- list(NULL)
 for(i in 1:length(land.lst)){
   equi7land[[i]] <- readOGR(land.lst[i], layer=strsplit(basename(land.lst[i]),"\\.")[[1]][1])
 }
-plot(equi7land[[1]])
-lines(as(equi7t3[[1]], "SpatialLines"))
+plot(equi7land[[7]])
+lines(as(equi7t3[[7]], "SpatialLines"))
+plot(equi7land[[4]])
+lines(as(equi7t3[[4]], "SpatialLines"))
 names(equi7t3) <- c.lst <- c("AF", "AN", "AS", "EU", "NA", "OC", "SA")
 names(equi7land) <- c.lst <- c("AF", "AN", "AS", "EU", "NA", "OC", "SA")
 save(equi7land, file="equi7land.rda")

@@ -5,7 +5,12 @@ library(gdalUtils)
 library(rgdal)
 library(plotKML)
 gdal.dir <- shortPathName("C:/Program files/GDAL")
-gdal_setInstallation(search_path=gdal.dir, rescan=TRUE)
+#gdal.dir <- shortPathName("C:/OSGeo4W64/bin")
+gdal_translate <- paste0(gdal.dir, "/gdal_translate.exe")
+gdalwarp <- paste0(gdal.dir, "/gdalwarp.exe")
+gdal_setInstallation(search_path=gdal.dir, rescan=FALSE)
+gdalinfo(version=TRUE)
+system(paste0(gdal.dir, "/gdalinfo --version"))
 load("../Equi7/equi7t3.rda")
 
 ## Prepare the GMTED2010 (https://lta.cr.usgs.gov/GMTED2010):
@@ -42,10 +47,11 @@ for(j in 1:length(equi7t3)){
 ## TH: Some tiles I had to clean up manually (digitize polygons, remove values and fill in the gaps using CLOSE GAPS using splines in SAGA GIS)
 
 ## check some tiles in Google Earth:
-gdalwarp("iceland_MDEM_EU_250m.sdat", "iceland_MDEM_EU_250m_ll.tif",  s_srs=proj4string(equi7t3[["EU"]]), t_srs="+proj=longlat +datum=WGS84")
+unlink("iceland_MDEM_EU_250m_ll.tif")
+system(paste0(gdalwarp, ' iceland_MDEM_EU_250m.sdat iceland_MDEM_EU_250m_ll.tif -s_srs \"', proj4string(equi7t3[["EU"]]), '\" -t_srs \"+proj=longlat +datum=WGS84\"'))
 iceland <- readGDAL("iceland_MDEM_EU_250m_ll.tif")
 iceland$band1 <- ifelse(iceland$band1==0, NA, iceland$band1)
-kml(iceland, raster_name="iceland_MDEM_EU_250m_ll.png", colour_scale=SAGA_pal[[1]], png.widht=iceland@grid@cells.dim[1]*3, png.height=iceland@grid@cells.dim[2]*3, z.lim=c(2,859))
+kml(iceland, file.name="iceland.kml", raster_name="iceland_MDEM_EU_250m_ll.png", colour_scale=SAGA_pal[[1]], png.widht=iceland@grid@cells.dim[1]*3, png.height=iceland@grid@cells.dim[2]*3, z.lim=c(2,859))
 
 gdalwarp("alaska_MDEM_NA_250m.sdat", "alaska_MDEM_NA_250m_ll.tif",  s_srs=proj4string(equi7t3[["NA"]]), t_srs="+proj=longlat +datum=WGS84")
 alaska <- readGDAL("alaska_MDEM_NA_250m_ll.tif")
