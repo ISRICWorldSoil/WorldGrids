@@ -6,6 +6,8 @@ library(sp)
 library(maptools)
 library(plotKML)
 library(GSIF)
+library(snowfall)
+library(rgeos)
 setwd("E:\\EQUI7")
 if(.Platform$OS.type == "windows"){
   gdal.dir <- shortPathName("C:/Program files/GDAL")
@@ -50,6 +52,33 @@ for(i in 1:length(t.lst)){
   equi7t3[[i]] <- equi7t3[[i]][equi7t3[[i]]$COVERSLAND==1,]
 }
 ## Few tiles needed manual fixing i.e. they show no-land but should be land
+save(equi7t3, file="equi7t3.rda")
+
+world <- raster("ne_10m_land.tif")
+world <- as(as(world, "SpatialGridDataFrame"), "SpatialPixelsDataFrame")
+t1.lst <- list.files(path="EQUI7_V13_GRIDS", pattern="*_PROJ_TILE_T1.shp$", full.names = TRUE, recursive = TRUE)
+list_equi7 <- function(i){
+  equi7t1 <- readOGR(t1.lst[i], layer=strsplit(basename(t1.lst[i]),"\\.")[[1]][1])
+  ## subset to tiles with land:
+  geog <- readOGR(gsub("PROJ", "GEOG", t1.lst[i]), layer=strsplit(basename(gsub("PROJ", "GEOG", t1.lst[i])),"\\.")[[1]][1])
+  world@proj4string = geog@proj4string
+  sel <- over(y=world, x=geog)
+  equi7t1 <- equi7t1[which(!is.na(sel[,1])),]
+  return(equi7t1)
+}
+#plot(equi7t1)
+
+## TAKES 30 mins:
+sfInit(parallel=TRUE, cpus=7)
+sfLibrary(rgdal)
+sfLibrary(sp)
+sfLibrary(raster)
+sfLibrary(rgeos)
+sfExport("world", "list_equi7", "t1.lst")
+equi7t1 <- sfLapply(1:length(t1.lst), list_equi7)
+sfStop()
+names(equi7t1) <- c.lst
+save(equi7t1, file="equi7t1.rda")
 
 ## land polys:
 land.lst <- list.files(path="EQUI7_V13_GRIDS", pattern="*_PROJ_LAND.shp$", full.names = TRUE, recursive = TRUE)
@@ -64,7 +93,6 @@ lines(as(equi7t3[[4]], "SpatialLines"))
 names(equi7t3) <- c.lst <- c("AF", "AN", "AS", "EU", "NA", "OC", "SA")
 names(equi7land) <- c.lst <- c("AF", "AN", "AS", "EU", "NA", "OC", "SA")
 save(equi7land, file="equi7land.rda")
-save(equi7t3, file="equi7t3.rda")
 
 ## write to Shapefiles:
 for(i in 1:length(equi7t3)){
