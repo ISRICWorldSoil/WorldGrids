@@ -99,6 +99,10 @@ for(i in 1:length(equi7t3)){
   writeOGR(equi7t3[[i]], paste0(names(equi7t3)[i], "_t3_tiles.shp"), paste0(names(equi7t3)[i], "_t3_tiles"), "ESRI Shapefile")
 }
 
+for(i in 1:length(equi7t1)){
+  writeOGR(equi7t1[[i]], paste0(names(equi7t1)[i], "_t1_tiles.shp"), paste0(names(equi7t1)[i], "_t1_tiles"), "ESRI Shapefile")
+}
+
 ## 8 representative areas for testing:
 s8 <- list(Zone=c("AF", "OC", "AS", "AS", "EU", "NA", "SA", "SA"), TILE=c("072_048", "087_063", "072_087", "048_003", "051_012", "060_036", "072_066", "090_048"))
 s8.equi7t3 <- list(NULL)
